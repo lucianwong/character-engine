@@ -9,6 +9,7 @@ export * from "./builder/CharacterPackWriter";
 export * from "./builder/naming";
 export * from "./builder/parameterInference";
 export * from "./builder/qa";
+export * from "./builder/Review";
 export * from "./builder/RigImporter";
 export * from "./builder/importers/Image2Live2DImporter";
 export * from "./builder/image2live2d/ProcessBuilder";

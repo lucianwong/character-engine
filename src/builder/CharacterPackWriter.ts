@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { generateImportReview } from "./Review";
 import { RigImportResult } from "./RigImporter";
 
 export interface WrittenPackFile {
@@ -54,6 +55,12 @@ export function materializeImportResultFiles(
           warnings: result.warnings,
           sourceMetadata: result.sourceMetadata,
         },
+        null,
+        2,
+      ) + "\n",
+    "builder/review.json":
+      JSON.stringify(
+        generateImportReview(result),
         null,
         2,
       ) + "\n",
