@@ -1,10 +1,8 @@
 # Character Pack Device Sync
 
-Character Engine now defines a transport-neutral synchronization contract for product deployments.
+Character Engine defines a transport-neutral synchronization contract for product deployments.
 
 ## Release descriptor
-
-A published Character Pack is represented by:
 
 ```ts
 {
@@ -18,11 +16,27 @@ A published Character Pack is represented by:
 }
 ```
 
-The engine does not dictate the archive format yet; the artifact is treated as a versioned binary release.
+## Sync acceptance path
+
+The sync service now performs:
+
+```text
+catalog lookup
+    |
+versioned cache lookup
+    |
+download when missing
+    |
+declared size verification
+    |
+SHA-256 verification (when declared)
+    |
+cache acceptance
+```
+
+A digest mismatch rejects the artifact before it enters the local cache.
 
 ## Catalog
-
-Management backends implement:
 
 ```ts
 interface CharacterPackCatalog {
@@ -35,56 +49,14 @@ interface CharacterPackCatalog {
 
 ## Transport
 
-Devices implement or use a transport:
-
 ```ts
 interface CharacterPackTransport {
   download(url: string): Promise<Uint8Array>;
 }
 ```
 
-A Fetch-based implementation is included.
+A Fetch-based implementation is included. Android, desktop, LAN-only or authenticated clients can replace it.
 
-Android, desktop, LAN-only devices, or authenticated fleet clients can replace it without changing the sync state machine.
+## Management backend
 
-## Sync service
-
-```ts
-const service = new CharacterPackSyncService(
-  catalog,
-  transport,
-  cache
-);
-
-const result = await service.sync({
-  characterId: "assistant-girl",
-  channel: "stable",
-  installedVersion: "1.3.0"
-});
-```
-
-The service:
-
-1. asks the catalog for latest release
-2. checks the versioned local cache
-3. downloads only when needed
-4. checks declared byte size
-5. stores the artifact by character/version
-6. reports `not-found`, `up-to-date`, or `downloaded`
-
-## Publishing
-
-`createCharacterPackRelease()` validates the public release descriptor before a management backend persists it.
-
-The current release schema supports a SHA-256 field, but cryptographic verification is intentionally not claimed as complete until the sync service verifies the digest before accepting the artifact.
-
-## Management backend boundary
-
-`CharacterManagementApi` defines the boundary for:
-
-- device registration
-- release publishing
-- device deployment assignment
-- latest-release lookup
-
-This interface is not a hosted backend. A Supabase, REST, local-network, or other control plane can implement it.
+`CharacterManagementApi` is the boundary for device registration, release publishing, deployment assignment, and release lookup. It is deliberately an interface rather than a hosted backend.

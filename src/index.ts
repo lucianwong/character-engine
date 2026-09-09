@@ -33,9 +33,12 @@ export * from "./product/DeviceProfile";
 export * from "./product/ManagementApi";
 export * from "./product/Publishing";
 
+export * from "./renderers/conformance";
 export * from "./renderers/NullRenderer";
 export * from "./renderers/RendererAdapter";
 export * from "./renderers/SvgPuppetRenderer";
+
+export * from "./security/integrity";
 
 export * from "./state/ActionQueue";
 export * from "./state/BehaviorStateMachine";

@@ -2,6 +2,7 @@ import {
   CachedAsset,
   CharacterAssetCache,
 } from "./AssetCache";
+import { verifySha256 } from "../security/integrity";
 
 export interface CharacterPackRelease {
   characterId: string;
@@ -127,6 +128,15 @@ export class CharacterPackSyncService {
           release.sizeBytes +
           ", got " +
           bytes.byteLength,
+      );
+    }
+
+    if (
+      release.sha256 &&
+      !(await verifySha256(bytes, release.sha256))
+    ) {
+      throw new Error(
+        "Character Pack SHA-256 integrity check failed",
       );
     }
 
