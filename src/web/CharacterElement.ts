@@ -28,10 +28,10 @@ export function createCharacterEngineElementClass() {
   }
 
   return class CharacterEngineElement extends HTMLElement {
-    private svg?: SVGSVGElement;
-    private controller?: CharacterController;
-    private raf?: number;
-    private startedAt = 0;
+    svg?: SVGSVGElement;
+    controller?: CharacterController;
+    raf?: number;
+    startedAt = 0;
 
     async configure(config: CharacterElementConfig): Promise<void> {
       this.stop();
