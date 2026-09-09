@@ -2,8 +2,10 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { Image2Live2DImporter } from "./builder/importers/Image2Live2DImporter";
 import { normalizePartNames } from "./builder/naming";
 import { generateCharacterQaReport } from "./builder/qa";
+import { writeCharacterPackDirectory } from "./builder/CharacterPackWriter";
 import {
   inspectCharacterPackFiles,
   loadCharacterPackDirectory,
@@ -20,6 +22,7 @@ function usage(): never {
       "  character-engine qa <pack-dir> [--json]",
       "  character-engine files <pack-dir>",
       "  character-engine normalize <part-name...>",
+      "  character-engine import-image2live2d <irr.json> <out-dir> --id <id> [--name <name>] [--version <version>]",
     ].join("\n"),
   );
   process.exit(2);
@@ -35,6 +38,81 @@ function readManifest(packDirectory: string): CharacterPackManifest {
   ) as CharacterPackManifest;
 }
 
+function option(args: string[], name: string): string | undefined {
+  const index = args.indexOf(name);
+  if (index < 0) return undefined;
+  return args[index + 1];
+}
+
+function positional(args: string[]): string[] {
+  const result: string[] = [];
+
+  for (let index = 0; index < args.length; index += 1) {
+    const value = args[index];
+
+    if (value.startsWith("--")) {
+      index += 1;
+      continue;
+    }
+
+    result.push(value);
+  }
+
+  return result;
+}
+
+function importImage2Live2D(args: string[]): void {
+  const [sourcePath, outputDirectory] = positional(args);
+  if (!sourcePath || !outputDirectory) usage();
+
+  const characterId = option(args, "--id");
+  if (!characterId) {
+    throw new Error("--id is required");
+  }
+
+  const source = JSON.parse(
+    fs.readFileSync(path.resolve(sourcePath), "utf8"),
+  ) as unknown;
+
+  const importer = new Image2Live2DImporter();
+  if (!importer.canImport(source)) {
+    throw new Error(
+      "Input JSON is not recognized as image2live2d IRR",
+    );
+  }
+
+  const result = importer.import(source, {
+    characterId,
+    name: option(args, "--name") ?? source.meta.name ?? characterId,
+    version: option(args, "--version") ?? "0.1.0",
+  });
+
+  const written = writeCharacterPackDirectory(
+    result,
+    outputDirectory,
+  );
+
+  console.log(
+    "Imported " +
+      characterId +
+      " with " +
+      result.capabilities.parts.length +
+      " parts, " +
+      result.capabilities.parameters.length +
+      " parameters, " +
+      result.warnings.length +
+      " warnings",
+  );
+
+  console.log("Output: " + written.root);
+
+  for (const warning of result.warnings) {
+    console.log(
+      "WARNING " + warning.code + " " + warning.message,
+    );
+  }
+}
+
 function main(): void {
   const [, , command, ...args] = process.argv;
 
@@ -43,6 +121,11 @@ function main(): void {
   if (command === "normalize") {
     if (args.length === 0) usage();
     console.log(JSON.stringify(normalizePartNames(args), null, 2));
+    return;
+  }
+
+  if (command === "import-image2live2d") {
+    importImage2Live2D(args);
     return;
   }
 

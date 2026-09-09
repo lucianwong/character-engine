@@ -4,8 +4,13 @@ export * from "./parameters";
 export * from "./behavior/ActionLibrary";
 export * from "./behavior/EmotionEngine";
 
+export * from "./builder/BuilderJob";
+export * from "./builder/CharacterPackWriter";
 export * from "./builder/naming";
+export * from "./builder/parameterInference";
 export * from "./builder/qa";
+export * from "./builder/RigImporter";
+export * from "./builder/importers/Image2Live2DImporter";
 
 export * from "./character-ir/validate";
 

@@ -62,6 +62,7 @@ export interface CharacterPart {
   zIndex?: number;
   pivot?: { x: number; y: number };
   bindings?: CharacterPartBinding[];
+  metadata?: Record<string, unknown>;
 }
 
 export interface CharacterActionDefinition {

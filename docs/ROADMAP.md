@@ -17,38 +17,42 @@ Status: **complete**
 Status: **integration-ready; real artwork still required**
 
 - [ ] import one existing layered full-body character
-- [ ] measure real pivots / anchors
+- [ ] measure/verify real pivots and anchors
 - [x] full-body humanoid parameter profile
-- [x] neck / pelvis / arm / leg hierarchy
 - [x] native Web SVG layered renderer
 - [x] keyframe / curve clip foundation
-- [ ] convert a real rig into Character IR
 - [ ] real-character multi-layer demo
 - [ ] transparent-joint-gap QA
 - [ ] screenshot/video regression fixture
 
 ## v0.3 — Character Builder
 
-Status: **tooling foundation implemented**
+Status: **core importer pipeline implemented**
 
-- [ ] upstream rig conversion adapter
-- [ ] upstream result-to-Character-IR mapping
+- [x] generic RigImporter plugin contract / registry
+- [x] image2live2d IRR importer
+- [x] upstream parameter mapping
 - [x] deterministic part naming normalizer
-- [ ] automatic parameter-range import
-- [ ] native artifact packaging
-- [x] builder CLI
+- [x] parameter range inference helper
+- [x] Character Pack directory materializer
+- [x] builder job runner
+- [x] builder CLI foundation
 - [x] QA report
 - [x] pack validation
 - [x] file/path audit
+- [ ] native image2live2d process/service invocation
+- [ ] copy referenced texture/native artifacts from a real conversion workspace
+
+See [IMAGE2LIVE2D_IMPORT.md](IMAGE2LIVE2D_IMPORT.md).
 
 ## v0.4 — AI-assisted decomposition
 
 - [ ] optional GPU builder service
-- [ ] single-image decomposition
+- [ ] single-image decomposition invocation
 - [ ] hidden-region / joint overlap QA
 - [ ] part-classification confidence report
 - [ ] human correction loop
-- [ ] builder job API
+- [x] generic asynchronous Builder Job API
 - [ ] compiled-pack cache
 
 ## v0.5 — Behavior system
@@ -60,9 +64,9 @@ Status: **core complete**
 - [x] interruptible gestures
 - [x] transition blending
 - [x] priority action queue
-- [x] emotion decay integrated into controller
+- [x] emotion decay
 - [x] parameter masks
-- [x] spring physics integrated into controller
+- [x] spring physics
 - [x] typed TTS/action lifecycle
 
 ## v0.6 — Product integration
@@ -71,7 +75,7 @@ Status: **runtime + sync foundation implemented**
 
 - [x] Web Component factory
 - [ ] desktop pet shell
-- [x] remote device pack sync protocol/service
+- [x] remote device pack sync
 - [x] versioned asset cache
 - [x] device capability negotiation
 - [x] low-power / E-Ink fallback
@@ -90,8 +94,6 @@ Status: **runtime + sync foundation implemented**
 - [ ] complete security review
 - [x] reduced-motion / low-power runtime contract
 - [ ] production documentation
-
-See [SECURITY.md](SECURITY.md).
 
 ## Definition of "real animation"
 
