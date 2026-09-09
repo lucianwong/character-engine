@@ -1,6 +1,6 @@
 {
   "name": "@lucianwong/character-engine",
-  "version": "0.6.0-alpha.1",
+  "version": "0.6.0-alpha.2",
   "description": "Renderer-independent character animation engine for AI companions and avatars.",
   "license": "MIT",
   "main": "dist/src/index.js",

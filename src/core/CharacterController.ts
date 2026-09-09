@@ -1,7 +1,17 @@
+import {
+  ActionLibrary,
+  createDefaultActionLibrary,
+} from "../behavior/ActionLibrary";
+import {
+  EmotionEngine,
+  EmotionName,
+} from "../behavior/EmotionEngine";
 import { assertValidCharacterPack } from "../character-ir/validate";
 import { BlinkDriver } from "../drivers/BlinkDriver";
 import { GazeDriver } from "../drivers/GazeDriver";
 import { LipSyncDriver } from "../drivers/LipSyncDriver";
+import { PhysicsSpringDriver } from "../drivers/PhysicsSpringDriver";
+import { CharacterEventBus } from "../events/CharacterEventBus";
 import { PARAM } from "../parameters";
 import { RendererAdapter } from "../renderers/RendererAdapter";
 import { ActionQueue } from "../state/ActionQueue";
@@ -34,6 +44,17 @@ interface ActiveExpression {
   intensity: number;
 }
 
+export interface SpeechStartOptions {
+  text?: string;
+  utteranceId?: string;
+}
+
+export interface SpeechEndOptions {
+  utteranceId?: string;
+  interrupted?: boolean;
+  resume?: "idle" | "listen";
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -60,6 +81,10 @@ export interface CharacterControllerOptions {
   blink?: BlinkDriver;
   gaze?: GazeDriver;
   lipSync?: LipSyncDriver;
+  physics?: PhysicsSpringDriver;
+  emotions?: EmotionEngine;
+  events?: CharacterEventBus;
+  actionLibrary?: ActionLibrary;
   motionLibrary?: DefaultMotionLibrary;
   stateTransitionMs?: number;
 }
@@ -68,12 +93,17 @@ export class CharacterController {
   readonly stateMachine = new BehaviorStateMachine();
   readonly actionQueue = new ActionQueue();
 
+  readonly events: CharacterEventBus;
+  readonly emotions: EmotionEngine;
+  readonly actionLibrary: ActionLibrary;
+
   private readonly motionMixer = new MotionMixer();
   private readonly expressionMixer = new ExpressionMixer();
 
   private readonly blink: BlinkDriver;
   private readonly gaze: GazeDriver;
   private readonly lipSync: LipSyncDriver;
+  private readonly physics?: PhysicsSpringDriver;
   private readonly motionLibrary: DefaultMotionLibrary;
   private readonly stateTransitionMs: number;
 
@@ -98,6 +128,11 @@ export class CharacterController {
     this.blink = options.blink ?? new BlinkDriver();
     this.gaze = options.gaze ?? new GazeDriver();
     this.lipSync = options.lipSync ?? new LipSyncDriver();
+    this.physics = options.physics;
+    this.events = options.events ?? new CharacterEventBus();
+    this.emotions = options.emotions ?? new EmotionEngine();
+    this.actionLibrary =
+      options.actionLibrary ?? createDefaultActionLibrary();
     this.motionLibrary =
       options.motionLibrary ?? new DefaultMotionLibrary();
     this.stateTransitionMs = Math.max(
@@ -120,13 +155,18 @@ export class CharacterController {
     this.actionQueue.clear();
     this.motionMixer.clear();
     this.expressionMixer.clear();
+    this.physics?.reset();
     await this.renderer.unload();
     this.loaded = false;
   }
 
   dispatch(action: SemanticAction): void {
     const intensity = clamp(action.intensity ?? 1, 0, 1);
-    const transition = this.stateMachine.dispatch(action.name);
+    const recipe = this.actionLibrary.get(action.name);
+
+    const transition = recipe?.state
+      ? this.stateMachine.transitionTo(recipe.state)
+      : this.stateMachine.dispatch(action.name);
 
     if (transition.changed) {
       this.previousState = transition.previous;
@@ -142,7 +182,10 @@ export class CharacterController {
         id,
         name: action.name,
         startedAt: this.lastNowMs,
-        durationMs: action.durationMs ?? gesture.durationMs,
+        durationMs:
+          action.durationMs ??
+          recipe?.durationMs ??
+          gesture.durationMs,
         intensity,
       });
     }
@@ -158,14 +201,24 @@ export class CharacterController {
         id,
         name: action.name,
         startedAt: this.lastNowMs,
-        durationMs: action.durationMs ?? 1400,
+        durationMs:
+          action.durationMs ?? recipe?.durationMs ?? 1400,
         intensity,
       });
     }
+
+    this.events.emit("action:dispatch", {
+      action: { ...action },
+    });
   }
 
   queue(action: SemanticAction, priority = 0): string {
-    return this.actionQueue.enqueue(action, priority);
+    const id = this.actionQueue.enqueue(action, priority);
+    this.events.emit("action:queued", {
+      action: { ...action },
+      priority,
+    });
+    return id;
   }
 
   interruptGestures(): void {
@@ -174,6 +227,30 @@ export class CharacterController {
 
   clearQueuedActions(): void {
     this.actionQueue.clear();
+  }
+
+  beginSpeech(options: SpeechStartOptions = {}): void {
+    this.events.emit("speech:start", { ...options });
+    this.dispatch({ name: "talk" });
+  }
+
+  endSpeech(options: SpeechEndOptions = {}): void {
+    this.silence();
+    this.events.emit("speech:end", {
+      utteranceId: options.utteranceId,
+      interrupted: options.interrupted,
+    });
+    this.dispatch({
+      name: options.resume === "listen" ? "listen" : "idle",
+    });
+  }
+
+  setEmotion(name: EmotionName, weight: number): void {
+    this.emotions.set(name, weight);
+  }
+
+  clearEmotion(name?: EmotionName): void {
+    this.emotions.clear(name);
   }
 
   setGaze(x: number, y: number): void {
@@ -188,6 +265,15 @@ export class CharacterController {
     this.lipSync.silence();
   }
 
+  setPhysicsTarget(parameter: string, value: number): void {
+    if (!this.physics) {
+      throw new Error(
+        "No PhysicsSpringDriver configured on CharacterController",
+      );
+    }
+    this.physics.setTarget(parameter, value);
+  }
+
   async tick(nowMs: number): Promise<ParameterFrame> {
     if (!this.loaded) {
       throw new Error("CharacterController.load() must be called before tick()");
@@ -195,6 +281,7 @@ export class CharacterController {
 
     const dtMs = Math.max(0, nowMs - this.lastNowMs);
     this.lastNowMs = nowMs;
+    this.emotions.update(dtMs);
 
     if (this.gestures.size === 0 && this.actionQueue.size > 0) {
       const next = this.actionQueue.next();
@@ -235,6 +322,16 @@ export class CharacterController {
       });
     }
 
+    if (this.physics) {
+      this.motionMixer.setLayer({
+        id: "physics",
+        priority: 40,
+        weight: 1,
+        mode: "add",
+        parameters: this.physics.update(dtMs),
+      });
+    }
+
     this.motionMixer.setLayer({
       id: "gaze",
       priority: 60,
@@ -261,6 +358,22 @@ export class CharacterController {
 
     let frame = this.motionMixer.mix(base);
     this.expressionMixer.clear();
+
+    for (const emotion of this.emotions.snapshot()) {
+      const parameters = this.motionLibrary.sampleExpression(
+        emotion.name,
+        1,
+      );
+
+      if (parameters) {
+        this.expressionMixer.set(
+          "emotion:" + emotion.name,
+          parameters,
+          emotion.weight,
+          40,
+        );
+      }
+    }
 
     for (const expression of [...this.expressions.values()]) {
       const elapsed = nowMs - expression.startedAt;

@@ -16,34 +16,32 @@ export class BehaviorStateMachine {
     return this.currentState;
   }
 
-  dispatch(action: SemanticActionName): StateTransition {
+  transitionTo(state: BehaviorState): StateTransition {
     const previous = this.currentState;
-
-    switch (action) {
-      case "idle":
-      case "wake":
-        this.currentState = "idle";
-        break;
-      case "talk":
-        this.currentState = "speaking";
-        break;
-      case "listen":
-        this.currentState = "listening";
-        break;
-      case "think":
-        this.currentState = "thinking";
-        break;
-      case "sleep":
-        this.currentState = "sleeping";
-        break;
-      default:
-        break;
-    }
+    this.currentState = state;
 
     return {
       previous,
       current: this.currentState,
       changed: previous !== this.currentState,
     };
+  }
+
+  dispatch(action: SemanticActionName): StateTransition {
+    switch (action) {
+      case "idle":
+      case "wake":
+        return this.transitionTo("idle");
+      case "talk":
+        return this.transitionTo("speaking");
+      case "listen":
+        return this.transitionTo("listening");
+      case "think":
+        return this.transitionTo("thinking");
+      case "sleep":
+        return this.transitionTo("sleeping");
+      default:
+        return this.transitionTo(this.currentState);
+    }
   }
 }
