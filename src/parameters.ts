@@ -5,6 +5,11 @@ export const PARAM = {
   bodyAngleX: "ParamBodyAngleX",
   breath: "ParamBreath",
 
+  neckZ: "ParamNeckZ",
+  pelvisX: "ParamPelvisX",
+  pelvisY: "ParamPelvisY",
+  pelvisZ: "ParamPelvisZ",
+
   eyeBallX: "ParamEyeBallX",
   eyeBallY: "ParamEyeBallY",
   eyeLOpen: "ParamEyeLOpen",
@@ -24,4 +29,11 @@ export const PARAM = {
   armR: "ParamArmR",
   elbowR: "ParamElbowR",
   handR: "ParamHandR",
+
+  thighL: "ParamThighL",
+  calfL: "ParamCalfL",
+  footL: "ParamFootL",
+  thighR: "ParamThighR",
+  calfR: "ParamCalfR",
+  footR: "ParamFootR",
 } as const;

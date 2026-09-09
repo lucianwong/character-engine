@@ -12,10 +12,13 @@ export * from "./drivers/BlinkDriver";
 export * from "./drivers/GazeDriver";
 export * from "./drivers/LipSyncDriver";
 
+export * from "./motion/KeyframeClip";
+
 export * from "./packs/loadCharacterPack";
 export * from "./packs/minimal";
 
 export * from "./renderers/NullRenderer";
 export * from "./renderers/RendererAdapter";
+export * from "./renderers/SvgPuppetRenderer";
 
 export * from "./state/BehaviorStateMachine";

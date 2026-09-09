@@ -2,7 +2,7 @@
 
 ## v0.1 — Foundation
 
-Status: **implemented in repository baseline**
+Status: **complete**
 
 - [x] TypeScript core
 - [x] Character IR v2 interfaces
@@ -33,14 +33,21 @@ Exit criterion: core architecture can be exercised without any renderer dependen
 
 ## v0.2 — First real character
 
+Status: **integration-ready; real artwork not yet committed**
+
 - [ ] import one existing layered full-body character
-- [ ] define final pivots / anchors
-- [ ] add pelvis / thigh / calf / foot standard parameters
+- [ ] measure and commit real pivots / anchors
+- [x] add pelvis / thigh / calf / foot standard parameters
+- [x] add neck + full-body hierarchy profile
+- [x] add dependency-free native Web SVG layered renderer
+- [x] add reusable keyframe / curve clip foundation
 - [ ] convert a real rig into Character IR
-- [ ] connect one real web renderer
+- [ ] connect the committed real character to a web renderer
 - [ ] demonstrate simultaneous wave + gaze + expression + speech
-- [ ] verify no transparent joint gaps
+- [ ] verify no transparent joint gaps on real artwork
 - [ ] add screenshot/video regression fixture
+
+See [REAL_CHARACTER_IMPORT.md](REAL_CHARACTER_IMPORT.md) for the exact asset handoff.
 
 Exit criterion: a real character can perform natural multi-layer motion.
 
@@ -72,7 +79,7 @@ Exit criterion: one image can reach a reviewable full-body rig pipeline without 
 ## v0.5 — Behavior system
 
 - [ ] declarative action library
-- [ ] keyframe / curve clip format
+- [x] keyframe / curve clip foundation
 - [ ] interruptible gestures
 - [ ] transition blending
 - [ ] action queue
