@@ -60,25 +60,27 @@ Status: **core complete**
 - [x] interruptible gestures
 - [x] transition blending
 - [x] priority action queue
-- [x] emotion decay engine
+- [x] emotion decay engine integrated into controller
 - [x] face / upper-body / lower-body masks
-- [x] generic spring physics contribution driver
-- [x] typed event bus for TTS/action lifecycle
+- [x] spring physics contribution integrated into controller
+- [x] typed TTS/action event lifecycle
 
 ## v0.6 — Product integration
 
-Status: **runtime integration foundation implemented**
+Status: **runtime + sync foundation implemented**
 
 - [x] Web Component factory
 - [ ] desktop pet shell
-- [ ] remote device pack sync transport
+- [x] remote device pack sync protocol/service
 - [x] versioned asset cache abstraction
 - [x] device capability negotiation
 - [x] low-power / E-Ink fallback profile
-- [ ] management API
-- [ ] character publishing workflow
+- [x] management API contract
+- [x] character release/publishing descriptor
+- [ ] cryptographic release verification
+- [ ] concrete management backend
 
-See [PRODUCT_INTEGRATION.md](PRODUCT_INTEGRATION.md).
+See [PRODUCT_INTEGRATION.md](PRODUCT_INTEGRATION.md) and [DEVICE_SYNC.md](DEVICE_SYNC.md).
 
 ## v1.0 — Stable Character Engine
 

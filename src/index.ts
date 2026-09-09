@@ -28,7 +28,10 @@ export * from "./packs/loadCharacterPack";
 export * from "./packs/minimal";
 
 export * from "./product/AssetCache";
+export * from "./product/CharacterPackSync";
 export * from "./product/DeviceProfile";
+export * from "./product/ManagementApi";
+export * from "./product/Publishing";
 
 export * from "./renderers/NullRenderer";
 export * from "./renderers/RendererAdapter";
