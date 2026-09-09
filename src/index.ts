@@ -1,6 +1,9 @@
 export * from "./types";
 export * from "./parameters";
 
+export * from "./behavior/ActionLibrary";
+export * from "./behavior/EmotionEngine";
+
 export * from "./builder/naming";
 export * from "./builder/qa";
 
@@ -15,11 +18,17 @@ export * from "./core/ParameterMask";
 export * from "./drivers/BlinkDriver";
 export * from "./drivers/GazeDriver";
 export * from "./drivers/LipSyncDriver";
+export * from "./drivers/PhysicsSpringDriver";
+
+export * from "./events/CharacterEventBus";
 
 export * from "./motion/KeyframeClip";
 
 export * from "./packs/loadCharacterPack";
 export * from "./packs/minimal";
+
+export * from "./product/AssetCache";
+export * from "./product/DeviceProfile";
 
 export * from "./renderers/NullRenderer";
 export * from "./renderers/RendererAdapter";
@@ -27,3 +36,5 @@ export * from "./renderers/SvgPuppetRenderer";
 
 export * from "./state/ActionQueue";
 export * from "./state/BehaviorStateMachine";
+
+export * from "./web/CharacterElement";
