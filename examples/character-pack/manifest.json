@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "2.0",
+  "id": "character-engine-minimal",
+  "name": "Character Engine Minimal",
+  "version": "0.1.0",
+  "rig": {
+    "ir": "rig/character.ir.json"
+  },
+  "metadata": {
+    "purpose": "Schema and integration example. Artwork intentionally omitted."
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "2.0",
+  "id": "character-engine-minimal",
+  "parameters": {
+    "ParamAngleX": { "id": "ParamAngleX", "min": -30, "max": 30, "default": 0 },
+    "ParamAngleY": { "id": "ParamAngleY", "min": -30, "max": 30, "default": 0 },
+    "ParamAngleZ": { "id": "ParamAngleZ", "min": -30, "max": 30, "default": 0 },
+    "ParamEyeLOpen": { "id": "ParamEyeLOpen", "min": 0, "max": 1, "default": 1 },
+    "ParamEyeROpen": { "id": "ParamEyeROpen", "min": 0, "max": 1, "default": 1 },
+    "ParamEyeBallX": { "id": "ParamEyeBallX", "min": -1, "max": 1, "default": 0 },
+    "ParamEyeBallY": { "id": "ParamEyeBallY", "min": -1, "max": 1, "default": 0 },
+    "ParamMouthOpenY": { "id": "ParamMouthOpenY", "min": 0, "max": 1, "default": 0 },
+    "ParamMouthForm": { "id": "ParamMouthForm", "min": -1, "max": 1, "default": 0 },
+    "ParamMouthA": { "id": "ParamMouthA", "min": 0, "max": 1, "default": 0 },
+    "ParamMouthE": { "id": "ParamMouthE", "min": 0, "max": 1, "default": 0 },
+    "ParamMouthI": { "id": "ParamMouthI", "min": 0, "max": 1, "default": 0 },
+    "ParamMouthO": { "id": "ParamMouthO", "min": 0, "max": 1, "default": 0 },
+    "ParamMouthU": { "id": "ParamMouthU", "min": 0, "max": 1, "default": 0 },
+    "ParamBodyAngleX": { "id": "ParamBodyAngleX", "min": -1, "max": 1, "default": 0 },
+    "ParamBreath": { "id": "ParamBreath", "min": 0, "max": 1, "default": 0 },
+    "ParamArmL": { "id": "ParamArmL", "min": -1, "max": 1, "default": 0 },
+    "ParamElbowL": { "id": "ParamElbowL", "min": -1, "max": 1, "default": 0 },
+    "ParamHandL": { "id": "ParamHandL", "min": -1, "max": 1, "default": 0 },
+    "ParamArmR": { "id": "ParamArmR", "min": -1, "max": 1, "default": 0 },
+    "ParamElbowR": { "id": "ParamElbowR", "min": -1, "max": 1, "default": 0 },
+    "ParamHandR": { "id": "ParamHandR", "min": -1, "max": 1, "default": 0 }
+  },
+  "parts": [
+    { "id": "torso", "zIndex": 0 },
+    { "id": "head", "parent": "torso", "zIndex": 10 },
+    { "id": "arm_l", "parent": "torso", "zIndex": 5 },
+    { "id": "forearm_l", "parent": "arm_l", "zIndex": 6 },
+    { "id": "hand_l", "parent": "forearm_l", "zIndex": 7 },
+    { "id": "arm_r", "parent": "torso", "zIndex": 5 },
+    { "id": "forearm_r", "parent": "arm_r", "zIndex": 6 },
+    { "id": "hand_r", "parent": "forearm_r", "zIndex": 7 }
+  ],
+  "actions": {
+    "idle": { "loop": true },
+    "talk": { "loop": true },
+    "listen": { "loop": true },
+    "think": { "loop": true },
+    "wave": { "durationMs": 1800 },
+    "point": { "durationMs": 1500 },
+    "sleep": { "loop": true },
+    "wake": { "durationMs": 1200 }
+  }
+}
