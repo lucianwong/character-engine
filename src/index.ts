@@ -10,6 +10,7 @@ export * from "./core/CharacterController";
 export * from "./core/DefaultMotionLibrary";
 export * from "./core/ExpressionMixer";
 export * from "./core/MotionMixer";
+export * from "./core/ParameterMask";
 
 export * from "./drivers/BlinkDriver";
 export * from "./drivers/GazeDriver";
@@ -24,4 +25,5 @@ export * from "./renderers/NullRenderer";
 export * from "./renderers/RendererAdapter";
 export * from "./renderers/SvgPuppetRenderer";
 
+export * from "./state/ActionQueue";
 export * from "./state/BehaviorStateMachine";

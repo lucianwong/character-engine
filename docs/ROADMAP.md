@@ -75,15 +75,19 @@ See [BUILDER.md](BUILDER.md).
 
 ## v0.5 — Behavior system
 
+Status: **core scheduling implemented**
+
 - [ ] declarative action library
 - [x] keyframe / curve clip foundation
-- [ ] interruptible gestures
-- [ ] transition blending
-- [ ] action queue
+- [x] interruptible gesture API
+- [x] state transition blending
+- [x] priority action queue
 - [ ] emotion decay
-- [ ] upper/lower body masks
+- [x] upper/lower/face parameter masks
 - [ ] physics contribution layer
 - [ ] event hooks for TTS start/end
+
+See [BEHAVIOR.md](BEHAVIOR.md).
 
 ## v0.6 — Product integration
 

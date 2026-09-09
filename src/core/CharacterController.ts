@@ -4,8 +4,10 @@ import { GazeDriver } from "../drivers/GazeDriver";
 import { LipSyncDriver } from "../drivers/LipSyncDriver";
 import { PARAM } from "../parameters";
 import { RendererAdapter } from "../renderers/RendererAdapter";
+import { ActionQueue } from "../state/ActionQueue";
 import { BehaviorStateMachine } from "../state/BehaviorStateMachine";
 import {
+  BehaviorState,
   CharacterPack,
   MouthShapeFrame,
   ParameterFrame,
@@ -36,15 +38,35 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+function blendFrames(
+  from: ParameterFrame,
+  to: ParameterFrame,
+  weight: number,
+): ParameterFrame {
+  const t = clamp(weight, 0, 1);
+  const result: ParameterFrame = {};
+  const ids = new Set([...Object.keys(from), ...Object.keys(to)]);
+
+  for (const id of ids) {
+    const a = from[id] ?? 0;
+    const b = to[id] ?? 0;
+    result[id] = a * (1 - t) + b * t;
+  }
+
+  return result;
+}
+
 export interface CharacterControllerOptions {
   blink?: BlinkDriver;
   gaze?: GazeDriver;
   lipSync?: LipSyncDriver;
   motionLibrary?: DefaultMotionLibrary;
+  stateTransitionMs?: number;
 }
 
 export class CharacterController {
   readonly stateMachine = new BehaviorStateMachine();
+  readonly actionQueue = new ActionQueue();
 
   private readonly motionMixer = new MotionMixer();
   private readonly expressionMixer = new ExpressionMixer();
@@ -53,12 +75,16 @@ export class CharacterController {
   private readonly gaze: GazeDriver;
   private readonly lipSync: LipSyncDriver;
   private readonly motionLibrary: DefaultMotionLibrary;
+  private readonly stateTransitionMs: number;
 
   private readonly gestures = new Map<string, ActiveGesture>();
   private readonly expressions = new Map<string, ActiveExpression>();
 
   private lastNowMs = 0;
   private stateStartedAt = 0;
+  private previousState?: BehaviorState;
+  private previousStateStartedAt = 0;
+  private transitionStartedAt = 0;
   private sequence = 0;
   private loaded = false;
 
@@ -74,6 +100,10 @@ export class CharacterController {
     this.lipSync = options.lipSync ?? new LipSyncDriver();
     this.motionLibrary =
       options.motionLibrary ?? new DefaultMotionLibrary();
+    this.stateTransitionMs = Math.max(
+      0,
+      options.stateTransitionMs ?? 220,
+    );
   }
 
   async load(): Promise<void> {
@@ -87,6 +117,7 @@ export class CharacterController {
     if (!this.loaded) return;
     this.gestures.clear();
     this.expressions.clear();
+    this.actionQueue.clear();
     this.motionMixer.clear();
     this.expressionMixer.clear();
     await this.renderer.unload();
@@ -98,6 +129,9 @@ export class CharacterController {
     const transition = this.stateMachine.dispatch(action.name);
 
     if (transition.changed) {
+      this.previousState = transition.previous;
+      this.previousStateStartedAt = this.stateStartedAt;
+      this.transitionStartedAt = this.lastNowMs;
       this.stateStartedAt = this.lastNowMs;
     }
 
@@ -130,6 +164,18 @@ export class CharacterController {
     }
   }
 
+  queue(action: SemanticAction, priority = 0): string {
+    return this.actionQueue.enqueue(action, priority);
+  }
+
+  interruptGestures(): void {
+    this.gestures.clear();
+  }
+
+  clearQueuedActions(): void {
+    this.actionQueue.clear();
+  }
+
   setGaze(x: number, y: number): void {
     this.gaze.setTarget(x, y);
   }
@@ -150,8 +196,12 @@ export class CharacterController {
     const dtMs = Math.max(0, nowMs - this.lastNowMs);
     this.lastNowMs = nowMs;
 
-    const base = this.defaultParameters();
+    if (this.gestures.size === 0 && this.actionQueue.size > 0) {
+      const next = this.actionQueue.next();
+      if (next) this.dispatch(next.action);
+    }
 
+    const base = this.defaultParameters();
     this.motionMixer.clear();
 
     this.motionMixer.setLayer({
@@ -159,10 +209,7 @@ export class CharacterController {
       priority: 10,
       weight: 1,
       mode: "override",
-      parameters: this.motionLibrary.sampleState(
-        this.stateMachine.state,
-        nowMs - this.stateStartedAt,
-      ),
+      parameters: this.sampleState(nowMs),
     });
 
     for (const gesture of [...this.gestures.values()]) {
@@ -213,7 +260,6 @@ export class CharacterController {
     });
 
     let frame = this.motionMixer.mix(base);
-
     this.expressionMixer.clear();
 
     for (const expression of [...this.expressions.values()]) {
@@ -255,6 +301,35 @@ export class CharacterController {
     await this.renderer.tick?.(nowMs);
 
     return frame;
+  }
+
+  private sampleState(nowMs: number): ParameterFrame {
+    const current = this.motionLibrary.sampleState(
+      this.stateMachine.state,
+      nowMs - this.stateStartedAt,
+    );
+
+    if (!this.previousState || this.stateTransitionMs <= 0) {
+      this.previousState = undefined;
+      return current;
+    }
+
+    const elapsed = nowMs - this.transitionStartedAt;
+    if (elapsed >= this.stateTransitionMs) {
+      this.previousState = undefined;
+      return current;
+    }
+
+    const previous = this.motionLibrary.sampleState(
+      this.previousState,
+      nowMs - this.previousStateStartedAt,
+    );
+
+    return blendFrames(
+      previous,
+      current,
+      elapsed / this.stateTransitionMs,
+    );
   }
 
   private defaultParameters(): ParameterFrame {
