@@ -11,6 +11,7 @@ export * from "./builder/parameterInference";
 export * from "./builder/qa";
 export * from "./builder/RigImporter";
 export * from "./builder/importers/Image2Live2DImporter";
+export * from "./builder/image2live2d/ProcessBuilder";
 
 export * from "./character-ir/validate";
 

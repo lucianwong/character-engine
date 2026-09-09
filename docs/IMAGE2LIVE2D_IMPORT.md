@@ -1,94 +1,86 @@
-# image2live2d IRR Import
+# image2live2d Integration
 
-Character Engine now contains a concrete importer for the upstream image2live2d Intermediate Rig Representation (IRR).
+Character Engine integrates at image2live2d's format-neutral Intermediate Rig Representation (IRR).
 
-The adapter is based on the upstream IRR design where a Rig contains:
+The current upstream public API returns a `ConversionResult` whose `rig` field is the full IRR object. The upstream CLI does not currently expose an `--irr` JSON flag, so Character Engine does not invent one.
+
+## Local process bridge
+
+`LocalImage2Live2DProcessExecutor` starts Python without a shell and runs a small bridge that calls the upstream public API:
 
 ```text
-meta
-textures
-parts
-meshes
-deformers
-parameters
-physics
-animations
+layers directory
+      |                    PSD
+      |                     |
+      +----------+----------+
+                 |
+                 v
+ image2live2d.convert_layers /
+ image2live2d.convert_psd
+                 |
+                 +--> result.rig
+                 |       |
+                 |       +--> model_dump_json()
+                 |
+                 +--> .inp
+                 +--> optional Live2D bundle
+                 +--> upstream QA result
 ```
 
-and the upstream parameter catalog uses standard Live2D IDs plus project-specific limb parameters.
+Character Engine then imports the generated IRR and copies native output artifacts into the Character Pack result.
 
-## Parameter mapping
-
-The importer preserves standard IDs verbatim and maps current image2live2d limb IDs:
-
-| image2live2d | Character Engine |
-|---|---|
-| ParamArmLA | ParamArmL |
-| ParamArmLB | ParamElbowL |
-| ParamArmRA | ParamArmR |
-| ParamArmRB | ParamElbowR |
-| ParamLegLA | ParamThighL |
-| ParamLegLB | ParamCalfL |
-| ParamLegRA | ParamThighR |
-| ParamLegRB | ParamCalfR |
-
-The mapping does **not** invent wrist/foot parameters that are absent upstream.
-
-## Parts and deformers
-
-Upstream parts carry semantic roles and may be parented to deformers.
-
-Character Engine:
-
-- maps known semantic roles to stable part IDs
-- preserves draw order
-- extracts the nearest rotation-deformer pivot when one exists
-- preserves upstream deformer/physics/animation data under Character IR metadata
-- stores the original IRR in the built pack under `source/image2live2d/irr.json`
-
-This is intentionally loss-aware rather than pretending Character IR currently represents every upstream mesh/deformer detail.
-
-## Capability report
-
-Every import returns:
+## Programmatic build
 
 ```ts
-{
-  parameters,
-  parts,
-  animations,
-  physics,
-  fullBody,
-  independentHands,
-  independentFeet
-}
+const result = await buildWithImage2Live2D({
+  kind: "psd",
+  inputPath: "./hero.psd",
+  workspace: "./.builder/hero",
+  live2d: true,
+  context: {
+    characterId: "hero",
+    name: "Hero",
+    version: "1.0.0"
+  }
+});
+
+writeCharacterPackDirectory(
+  result,
+  "./dist/characters/hero"
+);
 ```
 
-and warnings.
+The machine running this path needs Python and image2live2d installed. Character Engine itself keeps image2live2d optional.
 
-For example, current image2live2d `SemanticRole` includes `leg_l/leg_r` but no canonical independent foot role. The importer therefore reports `independentFeet: false` unless future source data explicitly provides mappable foot parts.
+## Output preservation
 
-## Builder flow
+The builder preserves:
+
+- original generated IRR
+- import capability/warning report
+- nijilive `.inp` when produced
+- Live2D model artifact path when produced
+- other files generated under the image2live2d native output workspace
+
+Native output is namespaced under:
 
 ```text
-image2live2d IRR JSON
-       |
-       v
-Image2Live2DImporter
-       |
-       +--> Character IR
-       +--> capability report
-       +--> warnings
-       +--> preserved source IRR
-       |
-       v
-Character Pack Writer
+native/image2live2d/
 ```
 
-The Character Pack Writer emits a deterministic directory layout with `manifest.json`, `rig/character.ir.json`, and `builder/import-report.json`.
+## Security boundary
 
-## Why import IRR instead of .inp
+The process executor:
 
-IRR is upstream of the nijilive / Live2D / CMO3 emitters, so it retains semantic parts, parameters, deformers, physics and animation information before backend-specific serialization.
+- uses `spawn(..., { shell: false })`
+- passes source/workspace paths as process arguments
+- requires the returned IRR to remain inside the configured workspace
+- only collects native files rooted inside the configured native output directory
 
-That makes it the cleanest integration boundary for Character Engine.
+This is not a sandbox for a malicious Python package. Install image2live2d from a trusted source and apply normal dependency controls.
+
+## Flat image path
+
+Single flat-image conversion currently remains a separate v0.4 integration step because upstream's public `convert_layers/convert_psd` API does not expose flat-image decomposition. The upstream CLI performs flat-image decomposition through See-through before creating the same IRR.
+
+The next service adapter should run that GPU decomposition boundary explicitly rather than hiding it inside the Character Engine runtime.
