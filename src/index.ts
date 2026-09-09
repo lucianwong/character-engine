@@ -1,6 +1,9 @@
 export * from "./types";
 export * from "./parameters";
 
+export * from "./builder/naming";
+export * from "./builder/qa";
+
 export * from "./character-ir/validate";
 
 export * from "./core/CharacterController";

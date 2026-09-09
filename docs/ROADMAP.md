@@ -29,8 +29,6 @@ Status: **complete**
 - [x] unit tests
 - [x] CI workflow
 
-Exit criterion: core architecture can be exercised without any renderer dependency.
-
 ## v0.2 — First real character
 
 Status: **integration-ready; real artwork not yet committed**
@@ -47,22 +45,23 @@ Status: **integration-ready; real artwork not yet committed**
 - [ ] verify no transparent joint gaps on real artwork
 - [ ] add screenshot/video regression fixture
 
-See [REAL_CHARACTER_IMPORT.md](REAL_CHARACTER_IMPORT.md) for the exact asset handoff.
-
-Exit criterion: a real character can perform natural multi-layer motion.
+See [REAL_CHARACTER_IMPORT.md](REAL_CHARACTER_IMPORT.md).
 
 ## v0.3 — Character Builder
 
-- [ ] image2live2d conversion adapter
-- [ ] IRR-to-Character-IR mapping
-- [ ] deterministic part naming normalizer
+Status: **tooling foundation implemented**
+
+- [ ] upstream rig conversion adapter
+- [ ] upstream result-to-Character-IR mapping
+- [x] deterministic part naming normalizer
 - [ ] automatic parameter-range import
 - [ ] native artifact packaging
-- [ ] builder CLI
-- [ ] QA report generator
-- [ ] pack validation command
+- [x] builder CLI foundation
+- [x] QA report generator
+- [x] pack validation command
+- [x] referenced-file audit and path-safety checks
 
-Exit criterion: a prepared PSD/layer set can compile to Character Pack with one command.
+See [BUILDER.md](BUILDER.md).
 
 ## v0.4 — AI-assisted decomposition
 
@@ -73,8 +72,6 @@ Exit criterion: a prepared PSD/layer set can compile to Character Pack with one 
 - [ ] human correction loop
 - [ ] builder job API
 - [ ] cache compiled packs
-
-Exit criterion: one image can reach a reviewable full-body rig pipeline without manual folder assembly.
 
 ## v0.5 — Behavior system
 
@@ -88,8 +85,6 @@ Exit criterion: one image can reach a reviewable full-body rig pipeline without 
 - [ ] physics contribution layer
 - [ ] event hooks for TTS start/end
 
-Exit criterion: long conversations remain visually natural without action collisions.
-
 ## v0.6 — Product integration
 
 - [ ] Web component
@@ -101,8 +96,6 @@ Exit criterion: long conversations remain visually natural without action collis
 - [ ] management API
 - [ ] character publishing workflow
 
-Exit criterion: the same character identity can be deployed to multiple device classes.
-
 ## v1.0 — Stable Character Engine
 
 - [ ] stabilized Character Pack schema
@@ -113,8 +106,6 @@ Exit criterion: the same character identity can be deployed to multiple device c
 - [ ] security review
 - [ ] accessibility / reduced-motion support
 - [ ] production documentation
-
-Exit criterion: Character Pack and RendererAdapter contracts are stable enough for external integrations.
 
 ## Definition of "real animation"
 
