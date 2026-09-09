@@ -12,6 +12,8 @@ export * from "./builder/qa";
 export * from "./builder/RigImporter";
 export * from "./builder/importers/Image2Live2DImporter";
 export * from "./builder/image2live2d/ProcessBuilder";
+export * from "./builder/seethrough/FlatImageBuilder";
+export * from "./builder/seethrough/SeeThroughClient";
 
 export * from "./character-ir/validate";
 
